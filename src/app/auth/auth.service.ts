@@ -5,6 +5,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 
 import { User } from './user.model';
 import { AuthData } from './auth-data.model';
+import { TrainingService } from '../training/training.service';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +13,9 @@ export class AuthService {
   // private user: User;
   private isAuthenticated = false;
 
-  constructor(private router: Router, private afAuth: AngularFireAuth) { }
+  constructor(private router: Router,
+    private afAuth: AngularFireAuth,
+    private trainingService: TrainingService) { }
 
   registerUser(authData: AuthData) {
     // this.user = {
@@ -21,10 +24,10 @@ export class AuthService {
     // };
     this.afAuth.auth.createUserWithEmailAndPassword(
       authData.email,
-      authData.password
-    ).then(result => {
-      this.authSuccessfully();
-    })
+      authData.password)
+      .then(result => {
+        this.authSuccessfully();
+      })
       .catch(error => {
         console.log(error);
       });
@@ -37,18 +40,20 @@ export class AuthService {
     // };
     this.afAuth.auth.signInWithEmailAndPassword(
       authData.email,
-      authData.password
-    ).then(result => {
-      console.log(result);
-      this.authSuccessfully();
-    })
+      authData.password)
+      .then(result => {
+        console.log(result);
+        this.authSuccessfully();
+      })
       .catch(error => {
         console.log(error);
       });
   }
 
   logout() {
+    this.trainingService.cancelSubscriptions();
     // this.user = null;
+    this.afAuth.auth.signOut();
     this.authChange.next(false);
     this.router.navigate(['/login']);
     this.isAuthenticated = false;
